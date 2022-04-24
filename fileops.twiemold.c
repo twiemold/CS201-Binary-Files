@@ -5,13 +5,7 @@
  * Programming Assignment #5: File Operations
  * C File
  */
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#define MAXWORDLEN 64
+#include "fileops.twiemold.h"
 
 //--------------------------------------------------------
 // return 1 if any chararacters are non-alphabetic;

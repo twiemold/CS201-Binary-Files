@@ -6,9 +6,25 @@
  * Header File
  */
 
-
 #ifndef CS201BINARYFILES_FILEOPS_TWIEMOLD_H
 #define CS201BINARYFILES_FILEOPS_TWIEMOLD_H
+
+#define MAXWORDLEN 31
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+typedef struct {
+    char word[1+MAXWORDLEN];
+    long nextpos;
+} Record;
+
+// Main functions
+int insertWord(FILE *fp, char *word);
+int countWords(FILE *fp, char letter, int *count);
+char **getWords(FILE *fp, char letter);
 
 // Utility Functions
 int checkWord(char *word);
