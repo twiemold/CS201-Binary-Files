@@ -8,19 +8,24 @@
 #include "fileops.twiemold.h"
 
 int insertWord(FILE *fp, char *word) {
+    // validate input
+    int wordError = 1;
+    wordError = checkWord(word);
+    if (wordError) {
+        printf("CheckWord failed. Please insert alphabetic word");
+        return 1;
+    }
+
     char *lowerWord = malloc(sizeof word);
     long *wordLocation = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
     Record *toWrite = malloc(sizeof(Record));
+    long filesize = getFilesize(fp);
 
-    int rc = fseek(fp, 0, SEEK_END);
-    if (rc != 0) {
-        printf("fseek() failed\n");
-        return rc;
-    }
-    long filesize = ftell(fp);
-
+    // sanitize input
     convertToLower(word, lowerWord);
+
+    // match starting letter
     long startingLocation = -1;
     for (int i = 0; i < strlen(ALPHABET); ++i) {
         if (lowerWord[0] == ALPHABET[i]) {
@@ -30,7 +35,6 @@ int insertWord(FILE *fp, char *word) {
     }
     fseek(fp, startingLocation, SEEK_SET);
     fread(wordLocation, sizeof(long), 1, fp);
-    // word location is sometimes a large negative
     if (*wordLocation == 0) {
         // no words with this letter
         fseek(fp, startingLocation, SEEK_SET);
@@ -65,6 +69,16 @@ int insertWord(FILE *fp, char *word) {
     free(lowerWord);
 
     return 0;
+}
+
+long getFilesize(FILE *fp) {
+    int rc = fseek(fp, 0, SEEK_END);
+    if (rc != 0) {
+        printf("fseek() failed\n");
+        return rc;
+    }
+    long filesize = ftell(fp);
+    return filesize;
 }
 
 //--------------------------------------------------------
@@ -177,12 +191,15 @@ int main() {
             return 8;
         }
     }
-
+    // this initializes first 208 bytes
+    // need to put in an if for when file is empty
+    long *ptr = malloc(sizeof(long));
+    *ptr = 0;
     for (int i = 0; i < 26; ++i) {
-        long *ptr = malloc(sizeof(long));
         fseek(fp, i * 8, SEEK_SET);
         fwrite(ptr, sizeof(long), 1, fp);
     }
+    free(ptr);
 
     testInsertWord(fp);
 
