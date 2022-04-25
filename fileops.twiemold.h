@@ -15,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <assert.h>
 
 typedef struct {
     char word[1+MAXWORDLEN];
@@ -42,6 +43,6 @@ long matchStartingLetter(char letter);
 // Testing functions
 int testUtils();
 int test_tolower(char *word);
-int testInsertWord(FILE *fp);
+int testMainFunctions(FILE *fp);
 
 #endif //CS201BINARYFILES_FILEOPS_TWIEMOLD_H

@@ -75,6 +75,31 @@ int countWords(FILE *fp, char letter, int *count) {
     // sanitize input
     letter = tolower(letter);
 
+    // match starting letter
+    long startingLocation = matchStartingLetter(letter);
+
+    long *wordLocation = malloc(sizeof(long));
+    Record *recordInfo = malloc(sizeof(Record));
+
+    fseek(fp, startingLocation, SEEK_SET);
+    fread(wordLocation, sizeof(long), 1, fp);
+
+    if (*wordLocation == 0) {
+        // no words with this letter
+        return 0;
+    } else {
+        // there are words with this letter
+        *count += 1;
+        fseek(fp, *wordLocation, SEEK_SET);
+        fread(recordInfo, sizeof(Record), 1, fp);
+        while (recordInfo->nextpos != 0) {
+            *count += 1;
+            *wordLocation = recordInfo->nextpos;
+            fseek(fp, recordInfo->nextpos, SEEK_SET);
+            fread(recordInfo, sizeof(Record), 1, fp);
+        }
+    }
+
     return 0;
 }
 
@@ -179,15 +204,20 @@ int testUtils() {
 }
 
 //-------------------------------------
-int testInsertWord(FILE *fp) {
+
+int testMainFunctions(FILE *fp) {
     char *word = malloc(MAXWORDLEN);
+    int *count = malloc(sizeof(count));
 
     strcpy(word, "nargles");
     insertWord(fp, word);
+    countWords(fp,'n', count);
+    assert(*count == 1);
     strcpy(word, "hermione");
     insertWord(fp, word);
 
     free(word);
+    free(count);
     return 0;
 }
 
@@ -219,7 +249,7 @@ int main() {
     }
     free(ptr);
 
-    testInsertWord(fp);
+    testMainFunctions(fp);
 
     fclose(fp);
     free(filename);
