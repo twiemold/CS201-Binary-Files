@@ -208,14 +208,26 @@ int testUtils() {
 int testMainFunctions(FILE *fp) {
     char *word = malloc(MAXWORDLEN);
     int *count = malloc(sizeof(count));
+    int badReturn = 0;
     *count = 0;
 
+    countWords(fp, 'k', count);
+    assert(*count == 0);
+
     strcpy(word, "nargles");
-    insertWord(fp, word);
+    badReturn = insertWord(fp, word);
+    if (badReturn) {
+        printf("InsertWord test failed on word %s", word);
+        return 1;
+    }
     countWords(fp,'n', count);
     assert(*count == 1);
     strcpy(word, "hermione");
-    insertWord(fp, word);
+    badReturn = insertWord(fp, word);
+    if (badReturn) {
+        printf("InsertWord test failed on word %s", word);
+        return 1;
+    }
     *count = 0;
     countWords(fp,'h', count);
     assert(*count == 1);
