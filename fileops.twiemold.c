@@ -26,13 +26,8 @@ int insertWord(FILE *fp, char *word) {
     convertToLower(word, lowerWord);
 
     // match starting letter
-    long startingLocation = -1;
-    for (int i = 0; i < strlen(ALPHABET); ++i) {
-        if (lowerWord[0] == ALPHABET[i]) {
-            startingLocation = i * 8;
-            break;
-        }
-    }
+    long startingLocation = matchStartingLetter(lowerWord[0]);
+
     fseek(fp, startingLocation, SEEK_SET);
     fread(wordLocation, sizeof(long), 1, fp);
     if (*wordLocation == 0) {
@@ -71,6 +66,18 @@ int insertWord(FILE *fp, char *word) {
     return 0;
 }
 
+int countWords(FILE *fp, char letter, int *count) {
+    // validate input
+    if ( ! isalpha(letter) ){
+        printf("CountWord Alpha Check failed. Please input a alphabetic letter");
+        return 1;
+    }
+    // sanitize input
+    letter = tolower(letter);
+
+    return 0;
+}
+
 long getFilesize(FILE *fp) {
     int rc = fseek(fp, 0, SEEK_END);
     if (rc != 0) {
@@ -79,6 +86,17 @@ long getFilesize(FILE *fp) {
     }
     long filesize = ftell(fp);
     return filesize;
+}
+
+long matchStartingLetter(char letter) {
+    long startingLocation = -1;
+    for (int i = 0; i < strlen(ALPHABET); ++i) {
+        if (letter == ALPHABET[i]) {
+            startingLocation = i * 8;
+            break;
+        }
+    }
+    return startingLocation;
 }
 
 //--------------------------------------------------------

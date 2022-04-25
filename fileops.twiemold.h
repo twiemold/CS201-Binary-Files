@@ -37,6 +37,7 @@ char **getWords(FILE *fp, char letter);
 int checkWord(char *word);
 int convertToLower(char *word, char *convertedWord);
 long getFilesize(FILE *fp);
+long matchStartingLetter(char letter);
 
 // Testing functions
 int testUtils();
