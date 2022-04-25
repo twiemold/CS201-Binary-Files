@@ -208,6 +208,7 @@ int testUtils() {
 int testMainFunctions(FILE *fp) {
     char *word = malloc(MAXWORDLEN);
     int *count = malloc(sizeof(count));
+    *count = 0;
 
     strcpy(word, "nargles");
     insertWord(fp, word);
@@ -215,6 +216,9 @@ int testMainFunctions(FILE *fp) {
     assert(*count == 1);
     strcpy(word, "hermione");
     insertWord(fp, word);
+    *count = 0;
+    countWords(fp,'h', count);
+    assert(*count == 1);
 
     free(word);
     free(count);
