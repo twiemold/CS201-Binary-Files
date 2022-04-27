@@ -344,6 +344,7 @@ int testMainFunctions(char *filename) {
     fclose(fp);
     free(word);
     free(count);
+    free(wordList);
     return 0;
 }
 
