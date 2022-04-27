@@ -111,7 +111,7 @@ char **getWords(FILE *fp, char letter) {
         return NULL;
     } else if (getFilesize(fp) == 0) {
         // no words with this letter
-        wordArray = (char**) malloc(sizeof(char *));
+        wordArray = malloc(sizeof(char *));
         wordArray[0] = NULL;
         return wordArray;
     }
@@ -129,25 +129,25 @@ char **getWords(FILE *fp, char letter) {
 
     if (*wordLocation == 0) {
         // no words with this letter
-        wordArray = (char**) malloc(sizeof(char *));
+        wordArray = malloc(sizeof(char *));
         wordArray[0] = NULL;
         free(wordLocation);
         free(recordInfo);
         return wordArray;
     } else {
         // there are words with this letter
-        int *wordCount = (int *) malloc(sizeof(int));
+        int *wordCount = malloc(sizeof(int));
         char *word;
         int wordLen;
         int wordIdx = 0;
         countWords(fp, letter, wordCount);
-        wordArray = (char **) malloc((*wordCount + 1) * sizeof(char *));
+        wordArray =  malloc((*wordCount + 1) * sizeof(char *));
         fseek(fp, *wordLocation, SEEK_SET);
         fread(recordInfo, sizeof(Record), 1, fp);
         while (recordInfo->nextpos != 0) {
             wordLen = strlen(recordInfo->word);
             wordArray[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
-            word = (char *) malloc((wordLen + 1) * sizeof(char));
+            word = malloc((wordLen + 1) * sizeof(char));
             strcpy(word, recordInfo->word);
             strcpy(wordArray[wordIdx], word);
             wordIdx++;
@@ -156,8 +156,8 @@ char **getWords(FILE *fp, char letter) {
             fread(recordInfo, sizeof(Record), 1, fp);
         }
         wordLen = strlen(recordInfo->word);
-        wordArray[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
-        word = (char *) malloc((wordLen + 1) * sizeof(char));
+        wordArray[wordIdx] = malloc((wordLen + 1) * sizeof(char));
+        word = malloc((wordLen + 1) * sizeof(char));
         strcpy(word, recordInfo->word);
         strcpy(wordArray[wordIdx], word);
         wordIdx++;
@@ -323,7 +323,6 @@ int testMainFunctions(FILE *fp) {
 //-------------------------------------
 
 int main() {
-    // TODO: Cast mallocs
     // TODO: Add test cases for get word
     // TODO: Refactor long variable names
     // TODO: Check frees in countWords
