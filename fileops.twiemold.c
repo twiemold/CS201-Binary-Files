@@ -17,7 +17,7 @@ int insertWord(FILE *fp, char *word) {
     }
 
     char *lowerWord = malloc(sizeof word);
-    long *wordLocation = malloc(sizeof(long));
+    long *wordPos = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
     Record *toWrite = malloc(sizeof(Record));
     long filesize = getFilesize(fp);
@@ -26,13 +26,13 @@ int insertWord(FILE *fp, char *word) {
     convertToLower(word, lowerWord);
 
     // match starting letter
-    long startingLocation = matchStartingLetter(lowerWord[0]);
+    long startPos = matchStartingLetter(lowerWord[0]);
 
-    fseek(fp, startingLocation, SEEK_SET);
-    fread(wordLocation, sizeof(long), 1, fp);
-    if (*wordLocation == 0) {
+    fseek(fp, startPos, SEEK_SET);
+    fread(wordPos, sizeof(long), 1, fp);
+    if (*wordPos == 0) {
         // no words with this letter
-        fseek(fp, startingLocation, SEEK_SET);
+        fseek(fp, startPos, SEEK_SET);
         long *filesizePtr = &filesize;
         fwrite(filesizePtr, sizeof(long), 1, fp);
         strcpy(toWrite->word, word);
@@ -41,14 +41,14 @@ int insertWord(FILE *fp, char *word) {
         fwrite(toWrite, sizeof(Record), 1, fp);
     } else {
         // there are words with this letter
-        fseek(fp, *wordLocation, SEEK_SET);
+        fseek(fp, *wordPos, SEEK_SET);
         fread(recordInfo, sizeof(Record), 1, fp);
         while (recordInfo->nextpos != 0) {
-            *wordLocation = recordInfo->nextpos;
+            *wordPos = recordInfo->nextpos;
             fseek(fp, recordInfo->nextpos, SEEK_SET);
             fread(recordInfo, sizeof(Record), 1, fp);
         }
-        fseek(fp, *wordLocation, SEEK_SET);
+        fseek(fp, *wordPos, SEEK_SET);
         strcpy(toWrite->word, recordInfo->word);
         toWrite->nextpos = filesize;
         fwrite(toWrite, sizeof(Record), 1, fp);
@@ -60,7 +60,7 @@ int insertWord(FILE *fp, char *word) {
 
     free(toWrite);
     free(recordInfo);
-    free(wordLocation);
+    free(wordPos);
     free(lowerWord);
 
     return 0;
@@ -76,66 +76,66 @@ int countWords(FILE *fp, char letter, int *count) {
     letter = tolower(letter);
 
     // match starting letter
-    long startingLocation = matchStartingLetter(letter);
+    long startPos = matchStartingLetter(letter);
 
-    long *wordLocation = malloc(sizeof(long));
+    long *wordPos = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
 
-    fseek(fp, startingLocation, SEEK_SET);
-    fread(wordLocation, sizeof(long), 1, fp);
+    fseek(fp, startPos, SEEK_SET);
+    fread(wordPos, sizeof(long), 1, fp);
 
-    if (*wordLocation == 0) {
+    if (*wordPos == 0) {
         // no words with this letter
-        free(wordLocation);
+        free(wordPos);
         free(recordInfo);
         return 0;
     } else {
         // there are words with this letter
         *count += 1;
-        fseek(fp, *wordLocation, SEEK_SET);
+        fseek(fp, *wordPos, SEEK_SET);
         fread(recordInfo, sizeof(Record), 1, fp);
         while (recordInfo->nextpos != 0) {
             *count += 1;
-            *wordLocation = recordInfo->nextpos;
+            *wordPos = recordInfo->nextpos;
             fseek(fp, recordInfo->nextpos, SEEK_SET);
             fread(recordInfo, sizeof(Record), 1, fp);
         }
     }
 
-    free(wordLocation);
+    free(wordPos);
     free(recordInfo);
     return 0;
 }
 
 char **getWords(FILE *fp, char letter) {
-    char **wordArray;
+    char **wordList;
     // validate input
     if ( ! isalpha(letter) ){
         printf("GetWord Alpha Check failed. Please input a alphabetic letter");
         return NULL;
     } else if (getFilesize(fp) == 0) {
         // no words with this letter
-        wordArray = malloc(sizeof(char *));
-        wordArray[0] = NULL;
-        return wordArray;
+        wordList = malloc(sizeof(char *));
+        wordList[0] = NULL;
+        return wordList;
     }
     // sanitize input
     letter = tolower(letter);
 
     // match starting letter
-    long startingLocation = matchStartingLetter(letter);
+    long startPos = matchStartingLetter(letter);
 
-    long *wordLocation = malloc(sizeof(long));
+    long *wordPos = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
 
-    fseek(fp, startingLocation, SEEK_SET);
-    fread(wordLocation, sizeof(long), 1, fp);
+    fseek(fp, startPos, SEEK_SET);
+    fread(wordPos, sizeof(long), 1, fp);
 
-    if (*wordLocation == 0) {
+    if (*wordPos == 0) {
         // no words with this letter
-        wordArray = malloc(sizeof(char *));
-        wordArray[0] = NULL;
-        free(wordLocation);
+        wordList = malloc(sizeof(char *));
+        wordList[0] = NULL;
+        free(wordPos);
         free(recordInfo);
     } else {
         // there are words with this letter
@@ -144,32 +144,32 @@ char **getWords(FILE *fp, char letter) {
         int wordLen;
         int wordIdx = 0;
         countWords(fp, letter, wordCount);
-        wordArray =  malloc((*wordCount + 1) * sizeof(char *));
-        fseek(fp, *wordLocation, SEEK_SET);
+        wordList =  malloc((*wordCount + 1) * sizeof(char *));
+        fseek(fp, *wordPos, SEEK_SET);
         fread(recordInfo, sizeof(Record), 1, fp);
         while (recordInfo->nextpos != 0) {
             wordLen = strlen(recordInfo->word);
-            wordArray[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
+            wordList[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
             word = malloc((wordLen + 1) * sizeof(char));
             strcpy(word, recordInfo->word);
-            strcpy(wordArray[wordIdx], word);
+            strcpy(wordList[wordIdx], word);
             wordIdx++;
-            *wordLocation = recordInfo->nextpos;
+            *wordPos = recordInfo->nextpos;
             fseek(fp, recordInfo->nextpos, SEEK_SET);
             fread(recordInfo, sizeof(Record), 1, fp);
         }
         wordLen = strlen(recordInfo->word);
-        wordArray[wordIdx] = malloc((wordLen + 1) * sizeof(char));
+        wordList[wordIdx] = malloc((wordLen + 1) * sizeof(char));
         word = malloc((wordLen + 1) * sizeof(char));
         strcpy(word, recordInfo->word);
-        strcpy(wordArray[wordIdx], word);
+        strcpy(wordList[wordIdx], word);
         wordIdx++;
-        wordArray[wordIdx] = NULL;
+        wordList[wordIdx] = NULL;
         free(word);
-        free(wordLocation);
+        free(wordPos);
         free(wordCount);
     }
-    return wordArray;
+    return wordList;
 }
 
 long getFilesize(FILE *fp) {
@@ -326,7 +326,6 @@ int testMainFunctions(FILE *fp) {
 //-------------------------------------
 
 int main() {
-    // TODO: Refactor long variable names
     int fileExists = 0;
     char *filename = malloc(MAXWORDLEN);
     strcpy(filename, "test_file");
