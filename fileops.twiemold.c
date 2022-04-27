@@ -324,7 +324,6 @@ int testMainFunctions(FILE *fp) {
 
 int main() {
     // TODO: Cast mallocs
-    // TODO: Put file intializer in if
     // TODO: Add test cases for get word
     // TODO: Refactor long variable names
     // TODO: Check frees in countWords
@@ -342,16 +341,15 @@ int main() {
             printf("cannot open file '%s'\n", filename);
             return 8;
         }
+        // this initializes first 208 bytes when file is empty
+        long *ptr = malloc(sizeof(long));
+        *ptr = 0;
+        for (int i = 0; i < 26; ++i) {
+            fseek(fp, i * 8, SEEK_SET);
+            fwrite(ptr, sizeof(long), 1, fp);
+        }
+        free(ptr);
     }
-    // this initializes first 208 bytes
-    // need to put in an if for when file is empty
-    long *ptr = malloc(sizeof(long));
-    *ptr = 0;
-    for (int i = 0; i < 26; ++i) {
-        fseek(fp, i * 8, SEEK_SET);
-        fwrite(ptr, sizeof(long), 1, fp);
-    }
-    free(ptr);
 
     testMainFunctions(fp);
 
