@@ -43,6 +43,6 @@ long matchStartingLetter(char letter);
 // Testing functions
 int testUtils();
 int test_tolower(char *word);
-int testMainFunctions(FILE *fp);
+int testMainFunctions(char *filename);
 
 #endif //CS201BINARYFILES_FILEOPS_TWIEMOLD_H

@@ -274,7 +274,30 @@ int testUtils() {
 
 //-------------------------------------
 
-int testMainFunctions(FILE *fp) {
+int testMainFunctions(char *filename) {
+    // test suite will fail if run on same file multiple times
+    int fileExists = 0;
+    FILE *fp;
+
+    fp = fopen(filename, "r+");
+    if (fp != NULL) {
+        fileExists = 1;
+    }
+    if ( ! fileExists ) {
+        fp = (FILE *) fopen(filename, "w+");
+        if (fp == NULL) {
+            printf("cannot open file '%s'\n", filename);
+            return 8;
+        }
+        // this initializes first 208 bytes when file is empty
+        long *ptr = malloc(sizeof(long));
+        *ptr = 0;
+        for (int i = 0; i < 26; ++i) {
+            fseek(fp, i * 8, SEEK_SET);
+            fwrite(ptr, sizeof(long), 1, fp);
+        }
+        free(ptr);
+    }
     char *word = malloc(MAXWORDLEN);
     int *count = malloc(sizeof(count));
     char **wordList;
@@ -318,6 +341,7 @@ int testMainFunctions(FILE *fp) {
     countWords(fp,'h', count);
     assert(*count == 1);
 
+    fclose(fp);
     free(word);
     free(count);
     return 0;
@@ -326,34 +350,11 @@ int testMainFunctions(FILE *fp) {
 //-------------------------------------
 
 int main() {
-    int fileExists = 0;
     char *filename = malloc(MAXWORDLEN);
-    strcpy(filename, "test_file");
-    FILE *fp;
+    strcpy(filename, "../test_file.dat");
 
-    fp = fopen(filename, "r+");
-    if (fp != NULL)
-        fileExists = 1;
-    if ( ! fileExists ) {
-        fp = (FILE *) fopen(filename, "w+");
-        if (fp == NULL) {
-            printf("cannot open file '%s'\n", filename);
-            return 8;
-        }
-        // this initializes first 208 bytes when file is empty
-        long *ptr = malloc(sizeof(long));
-        *ptr = 0;
-        for (int i = 0; i < 26; ++i) {
-            fseek(fp, i * 8, SEEK_SET);
-            fwrite(ptr, sizeof(long), 1, fp);
-        }
-        free(ptr);
-    }
+    testMainFunctions(filename);
 
-    testMainFunctions(fp);
-
-    fclose(fp);
     free(filename);
     return 0;
-
 }
