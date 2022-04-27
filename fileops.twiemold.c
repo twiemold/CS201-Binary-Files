@@ -86,6 +86,8 @@ int countWords(FILE *fp, char letter, int *count) {
 
     if (*wordLocation == 0) {
         // no words with this letter
+        free(wordLocation);
+        free(recordInfo);
         return 0;
     } else {
         // there are words with this letter
@@ -100,6 +102,8 @@ int countWords(FILE *fp, char letter, int *count) {
         }
     }
 
+    free(wordLocation);
+    free(recordInfo);
     return 0;
 }
 
@@ -133,7 +137,6 @@ char **getWords(FILE *fp, char letter) {
         wordArray[0] = NULL;
         free(wordLocation);
         free(recordInfo);
-        return wordArray;
     } else {
         // there are words with this letter
         int *wordCount = malloc(sizeof(int));
@@ -323,9 +326,7 @@ int testMainFunctions(FILE *fp) {
 //-------------------------------------
 
 int main() {
-    // TODO: Add test cases for get word
     // TODO: Refactor long variable names
-    // TODO: Check frees in countWords
     int fileExists = 0;
     char *filename = malloc(MAXWORDLEN);
     strcpy(filename, "test_file");
