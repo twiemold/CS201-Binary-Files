@@ -103,6 +103,71 @@ int countWords(FILE *fp, char letter, int *count) {
     return 0;
 }
 
+char **getWords(FILE *fp, char letter) {
+    char **wordArray;
+    // validate input
+    if ( ! isalpha(letter) ){
+        printf("GetWord Alpha Check failed. Please input a alphabetic letter");
+        return NULL;
+    } else if (getFilesize(fp) == 0) {
+        // no words with this letter
+        wordArray = (char**) malloc(sizeof(char *));
+        wordArray[0] = NULL;
+        return wordArray;
+    }
+    // sanitize input
+    letter = tolower(letter);
+
+    // match starting letter
+    long startingLocation = matchStartingLetter(letter);
+
+    long *wordLocation = malloc(sizeof(long));
+    Record *recordInfo = malloc(sizeof(Record));
+
+    fseek(fp, startingLocation, SEEK_SET);
+    fread(wordLocation, sizeof(long), 1, fp);
+
+    if (*wordLocation == 0) {
+        // no words with this letter
+        wordArray = (char**) malloc(sizeof(char *));
+        wordArray[0] = NULL;
+        free(wordLocation);
+        free(recordInfo);
+        return wordArray;
+    } else {
+        // there are words with this letter
+        int *wordCount = (int *) malloc(sizeof(int));
+        char *word;
+        int wordLen;
+        int wordIdx = 0;
+        countWords(fp, letter, wordCount);
+        wordArray = (char **) malloc((*wordCount + 1) * sizeof(char *));
+        fseek(fp, *wordLocation, SEEK_SET);
+        fread(recordInfo, sizeof(Record), 1, fp);
+        while (recordInfo->nextpos != 0) {
+            wordLen = strlen(recordInfo->word);
+            *wordArray = (char *) malloc((wordLen + 1) * sizeof(char));
+            word = (char *) malloc((wordLen + 1) * sizeof(char));
+            strcpy(word, recordInfo->word);
+            strcpy(wordArray[wordIdx], word);
+            wordIdx++;
+            *wordLocation = recordInfo->nextpos;
+            fseek(fp, recordInfo->nextpos, SEEK_SET);
+            fread(recordInfo, sizeof(Record), 1, fp);
+        }
+        wordLen = strlen(recordInfo->word);
+        *wordArray = (char *) malloc((wordLen + 1) * sizeof(char));
+        word = (char *) malloc((wordLen + 1) * sizeof(char));
+        strcpy(word, recordInfo->word);
+        strcpy(wordArray[wordIdx], word);
+        wordIdx++;
+        free(word);
+        free(wordLocation);
+        free(wordCount);
+    }
+    return wordArray;
+}
+
 long getFilesize(FILE *fp) {
     int rc = fseek(fp, 0, SEEK_END);
     if (rc != 0) {
@@ -208,6 +273,7 @@ int testUtils() {
 int testMainFunctions(FILE *fp) {
     char *word = malloc(MAXWORDLEN);
     int *count = malloc(sizeof(count));
+    char **wordList;
     int badReturn = 0;
     *count = 0;
 
@@ -222,6 +288,8 @@ int testMainFunctions(FILE *fp) {
     }
     countWords(fp,'n', count);
     assert(*count == 1);
+    wordList = getWords(fp, 'n');
+    printf("%s", wordList[0]);
     strcpy(word, "hermione");
     badReturn = insertWord(fp, word);
     if (badReturn) {
@@ -240,6 +308,11 @@ int testMainFunctions(FILE *fp) {
 //-------------------------------------
 
 int main() {
+    // TODO: Cast mallocs
+    // TODO: Put file intializer in if
+    // TODO: Add test cases for get word
+    // TODO: Refactor long variable names
+    // TODO: Check frees in countWords
     int fileExists = 0;
     char *filename = malloc(MAXWORDLEN);
     strcpy(filename, "test_file");
