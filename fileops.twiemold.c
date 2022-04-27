@@ -146,7 +146,7 @@ char **getWords(FILE *fp, char letter) {
         fread(recordInfo, sizeof(Record), 1, fp);
         while (recordInfo->nextpos != 0) {
             wordLen = strlen(recordInfo->word);
-            *wordArray = (char *) malloc((wordLen + 1) * sizeof(char));
+            wordArray[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
             word = (char *) malloc((wordLen + 1) * sizeof(char));
             strcpy(word, recordInfo->word);
             strcpy(wordArray[wordIdx], word);
@@ -156,7 +156,7 @@ char **getWords(FILE *fp, char letter) {
             fread(recordInfo, sizeof(Record), 1, fp);
         }
         wordLen = strlen(recordInfo->word);
-        *wordArray = (char *) malloc((wordLen + 1) * sizeof(char));
+        wordArray[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
         word = (char *) malloc((wordLen + 1) * sizeof(char));
         strcpy(word, recordInfo->word);
         strcpy(wordArray[wordIdx], word);
@@ -289,16 +289,24 @@ int testMainFunctions(FILE *fp) {
     countWords(fp,'n', count);
     assert(*count == 1);
     wordList = getWords(fp, 'n');
-    printf("%s", wordList[0]);
-    strcpy(word, "hermione");
+    printf("%s", *wordList);
+    strcpy(word, "niffler");
     badReturn = insertWord(fp, word);
     if (badReturn) {
         printf("InsertWord test failed on word %s", word);
         return 1;
     }
-    *count = 0;
-    countWords(fp,'h', count);
-    assert(*count == 1);
+    wordList = getWords(fp, 'n');
+    printf("%s", wordList[1]);
+//    strcpy(word, "hermione");
+//    badReturn = insertWord(fp, word);
+//    if (badReturn) {
+//        printf("InsertWord test failed on word %s", word);
+//        return 1;
+//    }
+//    *count = 0;
+//    countWords(fp,'h', count);
+//    assert(*count == 1);
 
     free(word);
     free(count);
