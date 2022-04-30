@@ -137,9 +137,14 @@ int countWords(FILE *fp, char letter, int *count) {
 
     long *wordPos = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
+    int num;
 
-    fseek(fp, startPos, SEEK_SET);
-    fread(wordPos, sizeof(long), 1, fp);
+    num = fseek(fp, startPos, SEEK_SET);
+    if (num > 0) {
+        printf("ERROR during seek in countWords\n");
+        return 8;
+    }
+    num = fread(wordPos, sizeof(long), 1, fp);
 
     if (*wordPos == 0) {
         // no words with this letter
@@ -149,13 +154,29 @@ int countWords(FILE *fp, char letter, int *count) {
     } else {
         // there are words with this letter
         *count += 1;
-        fseek(fp, *wordPos, SEEK_SET);
-        fread(recordInfo, sizeof(Record), 1, fp);
+        num = fseek(fp, *wordPos, SEEK_SET);
+        if (num > 0) {
+            printf("ERROR during seek in countWords\n");
+            return 8;
+        }
+        num = fread(recordInfo, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during read in countWords\n");
+            return 8;
+        }
         while (recordInfo->nextpos != 0) {
             *count += 1;
             *wordPos = recordInfo->nextpos;
-            fseek(fp, recordInfo->nextpos, SEEK_SET);
-            fread(recordInfo, sizeof(Record), 1, fp);
+            num = fseek(fp, recordInfo->nextpos, SEEK_SET);
+            if (num > 0) {
+                printf("ERROR during seek in countWords\n");
+                return 8;
+            }
+            num = fread(recordInfo, sizeof(Record), 1, fp);
+            if (num != 1) {
+                printf("ERROR during read in countWords\n");
+                return 8;
+            }
         }
     }
 
