@@ -392,6 +392,7 @@ int testUtils() {
 int testMainFunctions(char *filename) {
     // test suite will fail if run on same file multiple times
     int fileExists = 0;
+    int badTest = 0;
     FILE *fp;
 
     fp = fopen(filename, "r+");
@@ -408,8 +409,16 @@ int testMainFunctions(char *filename) {
         long *ptr = malloc(sizeof(long));
         *ptr = 0;
         for (int i = 0; i < 26; ++i) {
-            fseek(fp, i * 8, SEEK_SET);
-            fwrite(ptr, sizeof(long), 1, fp);
+            badTest = fseek(fp, i * 8, SEEK_SET);
+            if (badTest > 0) {
+                printf("ERROR during seek in initialization\n");
+                return 8;
+            }
+            badTest = fwrite(ptr, sizeof(long), 1, fp);
+            if (badTest != 1) {
+                printf("ERROR during write in initialization\n");
+                return 8;
+            }
         }
         free(ptr);
     }
@@ -427,7 +436,7 @@ int testMainFunctions(char *filename) {
     badReturn = insertWord(fp, word);
     if (badReturn) {
         printf("InsertWord test failed on word %s", word);
-        return 1;
+        return badReturn;
     }
     countWords(fp,'n', count);
     assert(*count == 1);
@@ -435,7 +444,7 @@ int testMainFunctions(char *filename) {
     badReturn = insertWord(fp, word);
     if (badReturn) {
         printf("InsertWord test failed on word %s", word);
-        return 1;
+        return badReturn;
     }
     *count = 0;
     countWords(fp,'n', count);
@@ -450,7 +459,7 @@ int testMainFunctions(char *filename) {
     badReturn = insertWord(fp, word);
     if (badReturn) {
         printf("InsertWord test failed on word %s", word);
-        return 1;
+        return badReturn;
     }
     *count = 0;
     countWords(fp,'h', count);
@@ -469,7 +478,12 @@ int main() {
     char *filename = malloc(MAXWORDLEN);
     strcpy(filename, "../test_file.dat");
 
-    testMainFunctions(filename);
+    int testVal = testMainFunctions(filename);
+    if (testVal > 0) {
+        printf("ERROR: Test Suite Failing. Return val: %d", testVal);
+    } else {
+        printf("All tests passed");
+    }
 
     free(filename);
     return 0;
