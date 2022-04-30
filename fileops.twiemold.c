@@ -13,7 +13,7 @@ int insertWord(FILE *fp, char *word) {
     wordError = checkWord(word);
     if (wordError) {
         printf("CheckWord failed. Please insert alphabetic word");
-        return 1;
+        return 8;
     }
 
     char *lowerWord = malloc(sizeof word);
@@ -21,6 +21,7 @@ int insertWord(FILE *fp, char *word) {
     Record *recordInfo = malloc(sizeof(Record));
     Record *toWrite = malloc(sizeof(Record));
     long filesize = getFilesize(fp);
+    int num;
 
     // sanitize input
     convertToLower(word, lowerWord);
@@ -28,34 +29,90 @@ int insertWord(FILE *fp, char *word) {
     // match starting letter
     long startPos = matchStartingLetter(lowerWord[0]);
 
-    fseek(fp, startPos, SEEK_SET);
-    fread(wordPos, sizeof(long), 1, fp);
+    num = fseek(fp, startPos, SEEK_SET);
+    if (num > 0) {
+        printf("ERROR during seek in insertWord\n");
+        return 8;
+    }
+    num = fread(wordPos, sizeof(long), 1, fp);
+    if (num != 1) {
+        printf("ERROR during read in insertWord\n");
+        return 8;
+    }
     if (*wordPos == 0) {
         // no words with this letter
-        fseek(fp, startPos, SEEK_SET);
+        num = fseek(fp, startPos, SEEK_SET);
+        if (num > 0) {
+            printf("ERROR during seek in insertWord\n");
+            return 8;
+        }
         long *filesizePtr = &filesize;
-        fwrite(filesizePtr, sizeof(long), 1, fp);
+        num = fwrite(filesizePtr, sizeof(long), 1, fp);
+        if (num != 1) {
+            printf("ERROR during write in insertWord\n");
+            return 8;
+        }
         strcpy(toWrite->word, word);
         toWrite->nextpos = 0;
-        fseek(fp, 0, SEEK_END);
-        fwrite(toWrite, sizeof(Record), 1, fp);
+        num = fseek(fp, 0, SEEK_END);
+        if (num > 0) {
+            printf("ERROR during seek in insertWord\n");
+            return 8;
+        }
+        num = fwrite(toWrite, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during write in insertWord\n");
+            return 8;
+        }
     } else {
         // there are words with this letter
-        fseek(fp, *wordPos, SEEK_SET);
-        fread(recordInfo, sizeof(Record), 1, fp);
+        num = fseek(fp, *wordPos, SEEK_SET);
+        if (num > 0) {
+            printf("ERROR during seek in insertWord\n");
+            return 8;
+        }
+        num = fread(recordInfo, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during read in insertWord\n");
+            return 8;
+        }
         while (recordInfo->nextpos != 0) {
             *wordPos = recordInfo->nextpos;
-            fseek(fp, recordInfo->nextpos, SEEK_SET);
-            fread(recordInfo, sizeof(Record), 1, fp);
+            num = fseek(fp, recordInfo->nextpos, SEEK_SET);
+            if (num > 0) {
+                printf("ERROR during seek in insertWord\n");
+                return 8;
+            }
+            num = fread(recordInfo, sizeof(Record), 1, fp);
+            if (num != 1) {
+                printf("ERROR during read in insertWord\n");
+                return 8;
+            }
         }
-        fseek(fp, *wordPos, SEEK_SET);
+        num = fseek(fp, *wordPos, SEEK_SET);
+        if (num > 0) {
+            printf("ERROR during seek in insertWord\n");
+            return 8;
+        }
         strcpy(toWrite->word, recordInfo->word);
         toWrite->nextpos = filesize;
-        fwrite(toWrite, sizeof(Record), 1, fp);
-        fseek(fp, 0, SEEK_END);
+        num = fwrite(toWrite, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during write in insertWord\n");
+            return 8;
+        }
+        num = fseek(fp, 0, SEEK_END);
+        if (num > 0) {
+            printf("ERROR during seek in insertWord\n");
+            return 8;
+        }
         strcpy(toWrite->word, word);
         toWrite->nextpos = 0;
-        fwrite(toWrite, sizeof(Record), 1, fp);
+        num = fwrite(toWrite, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during write in insertWord\n");
+            return 8;
+        }
     }
 
     free(toWrite);
