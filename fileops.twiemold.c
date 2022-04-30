@@ -205,9 +205,22 @@ char **getWords(FILE *fp, char letter) {
 
     long *wordPos = malloc(sizeof(long));
     Record *recordInfo = malloc(sizeof(Record));
+    int num;
 
-    fseek(fp, startPos, SEEK_SET);
-    fread(wordPos, sizeof(long), 1, fp);
+    num = fseek(fp, startPos, SEEK_SET);
+    if (num > 0) {
+        printf("ERROR during seek in getWords\n");
+        wordList = malloc(sizeof(char *));
+        wordList[0] = NULL;
+        return wordList;
+    }
+    num = fread(wordPos, sizeof(long), 1, fp);
+    if (num != 1) {
+        printf("ERROR during read in getWords\n");
+        wordList = malloc(sizeof(char *));
+        wordList[0] = NULL;
+        return wordList;
+    }
 
     if (*wordPos == 0) {
         // no words with this letter
@@ -223,8 +236,20 @@ char **getWords(FILE *fp, char letter) {
         int wordIdx = 0;
         countWords(fp, letter, wordCount);
         wordList =  malloc((*wordCount + 1) * sizeof(char *));
-        fseek(fp, *wordPos, SEEK_SET);
-        fread(recordInfo, sizeof(Record), 1, fp);
+        num = fseek(fp, *wordPos, SEEK_SET);
+        if (num > 0) {
+            printf("ERROR during seek in getWords\n");
+            wordList = malloc(sizeof(char *));
+            wordList[0] = NULL;
+            return wordList;
+        }
+        num = fread(recordInfo, sizeof(Record), 1, fp);
+        if (num != 1) {
+            printf("ERROR during read in getWords\n");
+            wordList = malloc(sizeof(char *));
+            wordList[0] = NULL;
+            return wordList;
+        }
         while (recordInfo->nextpos != 0) {
             wordLen = strlen(recordInfo->word);
             wordList[wordIdx] = (char *) malloc((wordLen + 1) * sizeof(char));
@@ -233,8 +258,20 @@ char **getWords(FILE *fp, char letter) {
             strcpy(wordList[wordIdx], word);
             wordIdx++;
             *wordPos = recordInfo->nextpos;
-            fseek(fp, recordInfo->nextpos, SEEK_SET);
-            fread(recordInfo, sizeof(Record), 1, fp);
+            num = fseek(fp, recordInfo->nextpos, SEEK_SET);
+            if (num > 0) {
+                printf("ERROR during seek in getWords\n");
+                wordList = malloc(sizeof(char *));
+                wordList[0] = NULL;
+                return wordList;
+            }
+            num = fread(recordInfo, sizeof(Record), 1, fp);
+            if (num != 1) {
+                printf("ERROR during read in getWords\n");
+                wordList = malloc(sizeof(char *));
+                wordList[0] = NULL;
+                return wordList;
+            }
         }
         wordLen = strlen(recordInfo->word);
         wordList[wordIdx] = malloc((wordLen + 1) * sizeof(char));
